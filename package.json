@@ -1,0 +1,21 @@
+{
+  "name": "college-complaint-management-system",
+  "version": "1.0.0",
+  "description": "Full-Stack College Complaint Management System (CCMS)",
+  "private": true,
+  "scripts": {
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
+    "install:all": "npm install && npm run install:server && npm run install:client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "start": "npm start --prefix server",
+    "build:client": "npm run build --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test:e2e": "npm run test:e2e --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
