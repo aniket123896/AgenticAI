@@ -36,8 +36,19 @@ const app = express();
 // Middlewares
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || ['http://localhost:5173', 'http://127.0.0.1:5173'],
-    credentials: true
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        origin.endsWith('.vercel.app') ||
+        origin === 'http://localhost:5173' ||
+        origin === 'http://localhost:3000' ||
+        origin === 'http://127.0.0.1:5173'
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error('Blocked by CORS'));
+    },
+    credentials: true,
   })
 );
 app.use(express.json({ limit: '10mb' }));
