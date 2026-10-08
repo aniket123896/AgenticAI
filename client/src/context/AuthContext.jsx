@@ -13,24 +13,29 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (token) {
+      const storedToken = localStorage.getItem('ccms_token');
+      if (storedToken) {
         try {
           const res = await authService.getMe();
-          setUser(res.data);
-          localStorage.setItem('ccms_user', JSON.stringify(res.data));
+          if (res.data) {
+            setUser(res.data);
+            localStorage.setItem('ccms_user', JSON.stringify(res.data));
+          }
         } catch (err) {
-          console.error('Session expired or invalid:', err);
-          setUser(null);
-          setToken(null);
-          localStorage.removeItem('ccms_token');
-          localStorage.removeItem('ccms_user');
+          console.error('Session verification check:', err);
+          if (err.response?.status === 401) {
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('ccms_token');
+            localStorage.removeItem('ccms_user');
+          }
         }
       }
       setLoading(false);
     };
 
     checkAuth();
-  }, [token]);
+  }, []);
 
   const login = async (credentials) => {
     const res = await authService.login(credentials);
@@ -55,11 +60,14 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
+    } catch (e) {
+      // Ignore network errors on logout
     } finally {
       setUser(null);
       setToken(null);
       localStorage.removeItem('ccms_token');
       localStorage.removeItem('ccms_user');
+      window.location.href = '/login';
     }
   };
 
