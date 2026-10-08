@@ -67,19 +67,6 @@ const LandingPage = () => {
               </>
             )}
           </div>
-
-          {/* Quick Demo Credentials pill */}
-          <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-4 p-3.5 rounded-2xl bg-white/80 backdrop-blur-md border border-slate-200/90 shadow-sm text-xs text-slate-600 dark:bg-slate-900/70 dark:border-slate-700 dark:text-slate-300">
-            <span className="font-bold text-indigo-700 dark:text-indigo-300">Quick Demo Access:</span>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 dark:text-slate-100">Admin:</span>
-              <code className="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono dark:bg-slate-800">admin@college.com</code>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-800 dark:text-slate-100">Student:</span>
-              <code className="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono dark:bg-slate-800">student@college.com</code>
-            </div>
-          </div>
         </div>
       </section>
 
