@@ -49,10 +49,19 @@
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(241, 245, 249, 1);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px -10px rgba(79, 70, 229, 0.12), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6);
 }
 
 /* Gradients */
@@ -68,3 +77,65 @@
 .gradient-dark {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
+
+/* Background Animated Grid & Blobs */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -40px) scale(1.08);
+  }
+  66% {
+    transform: translate(-25px, 25px) scale(0.95);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-35px, 35px) scale(1.1);
+  }
+  66% {
+    transform: translate(25px, -30px) scale(0.92);
+  }
+}
+
+@keyframes float-pulse {
+  0%, 100% {
+    transform: scale(1) translateY(0px);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.15) translateY(-20px);
+    opacity: 0.75;
+  }
+}
+
+.animate-blob-1 {
+  animation: float-slow 14s ease-in-out infinite;
+}
+
+.animate-blob-2 {
+  animation: float-reverse 18s ease-in-out infinite;
+}
+
+.animate-blob-3 {
+  animation: float-pulse 12s ease-in-out infinite;
+}
+
