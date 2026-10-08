@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -9,12 +9,23 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const { success, error } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname;
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/student/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,12 +36,12 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const user = await login({ email, password });
-      success(`Welcome back, ${user.name}!`);
+      const loggedUser = await login({ email: email.trim(), password });
+      success(`Welcome back, ${loggedUser.name}!`);
 
-      if (from) {
+      if (from && from !== '/login' && from !== '/register' && from !== '/') {
         navigate(from, { replace: true });
-      } else if (user.role === 'admin') {
+      } else if (loggedUser.role === 'admin') {
         navigate('/admin/dashboard', { replace: true });
       } else {
         navigate('/student/dashboard', { replace: true });
