@@ -59,6 +59,10 @@ NODE_ENV=production
 MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
 JWT_SECRET=your_super_secure_jwt_secret
 CLIENT_URL=https://your-frontend-domain.vercel.app
+
+# Real Gmail OTP Configuration
+EMAIL_USER=aniketbhore237@gmail.com
+EMAIL_PASS=your_16_char_google_app_password
 ```
 
 Important:
