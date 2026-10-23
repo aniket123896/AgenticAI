@@ -3,11 +3,12 @@ import api from './api';
 export const complaintService = {
   // Student: Create complaint with optional FormData (attachments)
   createComplaint: async (formData) => {
-    const response = await api.post('/complaints', formData, {
+    const isFormData = typeof FormData !== 'undefined' && formData instanceof FormData;
+    const response = await api.post('/complaints', formData, isFormData ? {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': undefined
       }
-    });
+    } : {});
     return response.data;
   },
 
@@ -26,6 +27,18 @@ export const complaintService = {
   // Student/Admin: Close resolved complaint
   closeComplaint: async (id) => {
     const response = await api.post(`/complaints/${id}/close`);
+    return response.data;
+  },
+
+  // Student: Confirm resolution and close ticket (Two-Way Student Verification)
+  confirmResolution: async (id) => {
+    const response = await api.post(`/complaints/${id}/confirm-resolution`);
+    return response.data;
+  },
+
+  // Student: Reopen complaint with remarks if issue not fixed
+  reopenComplaint: async (id, remarks) => {
+    const response = await api.post(`/complaints/${id}/reopen`, { remarks });
     return response.data;
   },
 

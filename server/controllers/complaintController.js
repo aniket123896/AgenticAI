@@ -189,6 +189,25 @@ export const getComplaintById = async (req, res, next) => {
       return sendError(res, 403, 'Access denied: You can only view your own complaints');
     }
 
+    // Auto-close check: if ticket was in Pending Confirmation for >= 3 days without response
+    if (complaint.status === 'Pending Confirmation') {
+      const since = complaint.pendingConfirmationSince || complaint.resolvedAt;
+      if (since && (Date.now() - new Date(since).getTime()) >= 3 * 24 * 60 * 60 * 1000) {
+        complaint.status = 'Closed';
+        complaint.closedAt = new Date();
+        await complaint.save();
+
+        await logComplaintHistory({
+          complaintId: complaint._id,
+          action: 'Auto-Closed (No Response After 3 Days)',
+          performedBy: req.user._id,
+          previousValue: 'Pending Confirmation',
+          newValue: 'Closed',
+          notes: 'Ticket automatically closed after 3 days without student response.'
+        });
+      }
+    }
+
     await complaint.populate([
       { path: 'submittedBy', select: 'name email studentId phone department year' },
       { path: 'assignedDepartment', select: 'name description' },
@@ -300,8 +319,8 @@ export const closeComplaint = async (req, res, next) => {
       return sendError(res, 403, 'Not authorized to close this complaint');
     }
 
-    if (complaint.status !== 'Resolved' && req.user.role === 'student') {
-      return sendError(res, 400, 'Only resolved complaints can be marked as closed');
+    if (!['Resolved', 'Pending Confirmation'].includes(complaint.status) && req.user.role === 'student') {
+      return sendError(res, 400, 'Only resolved or pending confirmation complaints can be marked as closed');
     }
 
     const previousStatus = complaint.status;
@@ -319,6 +338,99 @@ export const closeComplaint = async (req, res, next) => {
     });
 
     return sendSuccess(res, 200, 'Complaint closed successfully', complaint);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Confirm resolution and close complaint (Two-Way Student Verification Loop)
+// @route   POST /api/complaints/:id/confirm-resolution
+// @access  Private (Student or Admin)
+export const confirmResolution = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const complaint = await Complaint.findById(id);
+
+    if (!complaint) {
+      return sendError(res, 404, 'Complaint not found');
+    }
+
+    const submittedById = getEntityId(complaint.submittedBy);
+    const currentUserId = getEntityId(req.user._id || req.user.id);
+
+    if (req.user.role === 'student' && submittedById !== currentUserId) {
+      return sendError(res, 403, 'Not authorized to verify this complaint');
+    }
+
+    const previousStatus = complaint.status;
+    complaint.status = 'Closed';
+    complaint.confirmedResolvedAt = new Date();
+    complaint.closedAt = new Date();
+    await complaint.save();
+
+    await logComplaintHistory({
+      complaintId: complaint._id,
+      action: 'Resolution Confirmed by Student',
+      performedBy: req.user._id,
+      previousValue: previousStatus,
+      newValue: 'Closed',
+      notes: `Student verified and confirmed the fix. Ticket closed.`
+    });
+
+    return sendSuccess(res, 200, 'Resolution confirmed! Complaint closed successfully.', complaint);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Reopen complaint with remarks if issue not fixed (Two-Way Student Verification Loop)
+// @route   POST /api/complaints/:id/reopen
+// @access  Private (Student or Admin)
+export const reopenComplaint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { remarks } = req.body;
+
+    if (!remarks || remarks.trim().length === 0) {
+      return sendError(res, 400, 'Please provide remarks explaining why the issue is not fixed');
+    }
+
+    const complaint = await Complaint.findById(id);
+
+    if (!complaint) {
+      return sendError(res, 404, 'Complaint not found');
+    }
+
+    const submittedById = getEntityId(complaint.submittedBy);
+    const currentUserId = getEntityId(req.user._id || req.user.id);
+
+    if (req.user.role === 'student' && submittedById !== currentUserId) {
+      return sendError(res, 403, 'Not authorized to reopen this complaint');
+    }
+
+    const previousStatus = complaint.status;
+    complaint.status = 'In Progress';
+    complaint.reopenRemarks = remarks.trim();
+    complaint.reopenedAt = new Date();
+    await complaint.save();
+
+    // Add student remark as an official comment thread entry
+    await Comment.create({
+      complaint: String(complaint._id),
+      user: String(req.user._id || req.user.id),
+      comment: `🔄 [TICKET REOPENED BY STUDENT]: "${remarks.trim()}"`
+    });
+
+    await logComplaintHistory({
+      complaintId: complaint._id,
+      action: 'Ticket Reopened by Student',
+      performedBy: req.user._id,
+      previousValue: previousStatus,
+      newValue: 'In Progress',
+      notes: `Student reported issue not fixed: "${remarks.trim().slice(0, 80)}"`
+    });
+
+    return sendSuccess(res, 200, 'Complaint reopened and set back to In Progress', complaint);
   } catch (error) {
     next(error);
   }
@@ -391,11 +503,11 @@ export const submitFeedback = async (req, res, next) => {
     const submittedById = getEntityId(complaint.submittedBy);
     const currentUserId = getEntityId(req.user._id || req.user.id);
 
-    if (submittedById !== currentUserId) {
+    if (submittedById !== currentUserId && req.user.role !== 'admin') {
       return sendError(res, 403, 'You can only provide feedback for your own complaints');
     }
 
-    if (!['Resolved', 'Closed'].includes(complaint.status)) {
+    if (!['Resolved', 'Pending Confirmation', 'Closed'].includes(complaint.status)) {
       return sendError(res, 400, 'Feedback can only be submitted for resolved or closed complaints');
     }
 
@@ -413,6 +525,12 @@ export const submitFeedback = async (req, res, next) => {
     });
 
     complaint.feedback = feedback._id;
+    // If ticket was in Pending Confirmation, rating it confirms resolution and closes it
+    if (complaint.status === 'Pending Confirmation') {
+      complaint.status = 'Closed';
+      complaint.confirmedResolvedAt = new Date();
+      complaint.closedAt = new Date();
+    }
     await complaint.save();
 
     await logComplaintHistory({

@@ -35,26 +35,26 @@ const StudentProfile = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in dark:text-slate-100">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Student Profile</h1>
-        <p className="text-xs text-slate-500">Manage your contact details and academic preferences</p>
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Student Profile</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Manage your contact details and academic preferences</p>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm dark:bg-slate-900 dark:border-slate-800 transition-colors">
         {/* Avatar header */}
-        <div className="flex items-center gap-4 pb-6 mb-6 border-b border-slate-100">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-200">
+        <div className="flex items-center gap-4 pb-6 mb-6 border-b border-slate-100 dark:border-slate-800">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-indigo-200 dark:shadow-none">
             {user?.name?.charAt(0) || 'U'}
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
-            <p className="text-xs text-slate-500">{user?.email}</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{user?.name}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{user?.email}</p>
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 {user?.studentId || 'ID UNSET'}
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
                 Student Account
               </span>
             </div>
@@ -63,7 +63,7 @@ const StudentProfile = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
               Full Name
             </label>
             <div className="relative">
@@ -74,13 +74,13 @@ const StudentProfile = () => {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
+                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
               Email Address (Fixed)
             </label>
             <div className="relative">
@@ -89,13 +89,13 @@ const StudentProfile = () => {
                 type="email"
                 disabled
                 value={user?.email || ''}
-                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:border-slate-700/60 dark:text-slate-400 cursor-not-allowed"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
               Phone Number
             </label>
             <div className="relative">
@@ -106,14 +106,14 @@ const StudentProfile = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+1 (555) 000-0000"
-                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
+                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                 Department
               </label>
               <input
@@ -121,12 +121,12 @@ const StudentProfile = () => {
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1.5">
                 Academic Year
               </label>
               <input
@@ -134,16 +134,16 @@ const StudentProfile = () => {
                 name="year"
                 value={formData.year}
                 onChange={handleChange}
-                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
+                className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-md shadow-indigo-200 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-md shadow-indigo-200 dark:shadow-none disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {loading ? 'Saving Changes...' : 'Save Profile Changes'}

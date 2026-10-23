@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { complaintService } from '../../services/complaintService';
 import { useToast } from '../../hooks/useToast';
@@ -26,13 +26,33 @@ const SubmitComplaint = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const titleRef = useRef(null);
+  const locationRef = useRef(null);
+  const descriptionRef = useRef(null);
+
   const { success, error } = useToast();
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
+
+    if (name === 'title') {
+      const trimmed = value.trim();
+      if (trimmed.length > 0 && trimmed.length < 5) {
+        setErrors((prev) => ({
+          ...prev,
+          title: `Minimum length is 5 to 100 characters (currently ${trimmed.length} chars).`
+        }));
+      } else if (trimmed.length > 100) {
+        setErrors((prev) => ({
+          ...prev,
+          title: `Title cannot exceed 100 characters (currently ${trimmed.length} chars).`
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, title: '' }));
+      }
+    } else if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
@@ -69,17 +89,50 @@ const SubmitComplaint = () => {
 
   const validate = () => {
     const errs = {};
-    if (!formData.title.trim() || formData.title.trim().length < 5 || formData.title.trim().length > 100) {
-      errs.title = 'Title must be between 5 and 100 characters.';
+    const trimmedTitle = formData.title.trim();
+    const trimmedDesc = formData.description.trim();
+    const trimmedLoc = formData.location.trim();
+
+    if (!trimmedTitle || trimmedTitle.length < 5 || trimmedTitle.length > 100) {
+      errs.title = 'Minimum length is 5 to 100 characters.';
     }
-    if (!formData.description.trim() || formData.description.trim().length < 20) {
-      errs.description = 'Please provide a detailed description (minimum 20 characters).';
-    }
-    if (!formData.location.trim()) {
+    if (!trimmedLoc) {
       errs.location = 'Please specify the exact location / room / block.';
     }
+    if (!trimmedDesc || trimmedDesc.length < 20) {
+      errs.description = 'Please provide a detailed description (minimum 20 characters).';
+    }
+
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+
+    if (errs.title) {
+      error('Minimum length for Complaint Title is 5 to 100 characters.');
+      setTimeout(() => {
+        titleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        titleRef.current?.focus();
+      }, 50);
+      return false;
+    }
+
+    if (errs.location) {
+      error('Please specify the exact location / room / block.');
+      setTimeout(() => {
+        locationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        locationRef.current?.focus();
+      }, 50);
+      return false;
+    }
+
+    if (errs.description) {
+      error('Please provide a detailed description (minimum 20 characters).');
+      setTimeout(() => {
+        descriptionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        descriptionRef.current?.focus();
+      }, 50);
+      return false;
+    }
+
+    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -134,21 +187,40 @@ const SubmitComplaint = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Complaint Title */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
-              Complaint Title <span className="text-rose-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                Complaint Title <span className="text-rose-500">*</span>
+              </label>
+              <span
+                className={`text-[10px] font-semibold transition-colors ${
+                  formData.title.trim().length > 0 && formData.title.trim().length < 5
+                    ? 'text-rose-500 font-bold'
+                    : formData.title.trim().length >= 5
+                    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                    : 'text-slate-400'
+                }`}
+              >
+                {formData.title.trim().length}/100 chars (min 5)
+              </span>
+            </div>
             <input
+              ref={titleRef}
               type="text"
               name="title"
               value={formData.title}
               onChange={handleInputChange}
               placeholder="e.g. Wi-Fi router not working in Computer Lab 2"
               className={`w-full px-4 py-2.5 text-xs rounded-xl border bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-indigo-600 transition dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-400 ${
-                errors.title ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20'
+                errors.title
+                  ? 'border-rose-400 ring-2 ring-rose-500/20'
+                  : 'border-slate-200 focus:ring-indigo-500/20'
               }`}
             />
             {errors.title && (
-              <p className="text-[11px] text-rose-600 font-medium mt-1">{errors.title}</p>
+              <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {errors.title}
+              </p>
             )}
           </div>
 
@@ -178,17 +250,21 @@ const SubmitComplaint = () => {
                 Specific Location <span className="text-rose-500">*</span>
               </label>
               <input
+                ref={locationRef}
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
                 placeholder="e.g. Mechanical Block - Room 304"
                 className={`w-full px-4 py-2.5 text-xs rounded-xl border bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-indigo-600 transition dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-400 ${
-                  errors.location ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20'
+                  errors.location ? 'border-rose-400 ring-2 ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20'
                 }`}
               />
               {errors.location && (
-                <p className="text-[11px] text-rose-600 font-medium mt-1">{errors.location}</p>
+                <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {errors.location}
+                </p>
               )}
             </div>
           </div>
@@ -233,13 +309,14 @@ const SubmitComplaint = () => {
               Detailed Description <span className="text-rose-500">*</span>
             </label>
             <textarea
+              ref={descriptionRef}
               name="description"
               rows={5}
               value={formData.description}
               onChange={handleInputChange}
               placeholder="Provide complete details regarding the problem, when it started, and any symptoms observed..."
               className={`w-full p-3.5 text-xs rounded-xl border bg-slate-50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:border-indigo-600 transition resize-none dark:bg-slate-800 dark:border-slate-600 dark:text-slate-100 dark:placeholder:text-slate-400 ${
-                errors.description ? 'border-rose-400 focus:ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20'
+                errors.description ? 'border-rose-400 ring-2 ring-rose-500/20' : 'border-slate-200 focus:ring-indigo-500/20'
               }`}
             />
             <div className="flex items-center justify-between mt-1 text-[11px] text-slate-400 dark:text-slate-400">
@@ -247,7 +324,10 @@ const SubmitComplaint = () => {
               <span>{formData.description.length} characters</span>
             </div>
             {errors.description && (
-              <p className="text-[11px] text-rose-600 font-medium mt-0.5">{errors.description}</p>
+              <p className="text-[11px] text-rose-600 font-semibold mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {errors.description}
+              </p>
             )}
           </div>
 

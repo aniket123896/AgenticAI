@@ -1,6 +1,16 @@
 import api from './api';
 
 export const authService = {
+  sendOtp: async (email, purpose = 'login') => {
+    const response = await api.post('/auth/send-otp', { email, purpose });
+    return response.data;
+  },
+
+  verifyOtp: async (email, otp, purpose = 'login') => {
+    const response = await api.post('/auth/verify-otp', { email, otp, purpose });
+    return response.data;
+  },
+
   register: async (userData) => {
     const response = await api.post('/auth/register', userData);
     return response.data;

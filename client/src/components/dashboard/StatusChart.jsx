@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
 const COLORS = {
   Submitted: '#94a3b8',
@@ -13,10 +14,11 @@ const COLORS = {
 const DEFAULT_COLORS = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
 
 const StatusChart = ({ data = [] }) => {
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const tooltipBg = isDark ? '#020817' : '#ffffff';
-  const textColor = isDark ? '#e2e8f0' : '#0f172a';
-  const labelColor = isDark ? '#e2e8f0' : '#334155';
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
+  const textColor = isDark ? '#f1f5f9' : '#0f172a';
+  const labelColor = isDark ? '#cbd5e1' : '#475569';
 
   if (!data || data.length === 0) {
     return (
@@ -29,18 +31,18 @@ const StatusChart = ({ data = [] }) => {
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
+        <PieChart margin={{ top: 10, right: 15, bottom: 10, left: 15 }}>
           <Pie
             data={data}
             cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={85}
-            paddingAngle={4}
+            cy="44%"
+            innerRadius={48}
+            outerRadius={70}
+            paddingAngle={3}
             dataKey="value"
             nameKey="name"
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-            labelLine={{ stroke: labelColor, strokeWidth: 1 }}
+            label={({ percent }) => (percent > 0.04 ? `${(percent * 100).toFixed(0)}%` : '')}
+            labelLine={{ stroke: labelColor, strokeWidth: 1.5 }}
           >
             {data.map((entry, index) => (
               <Cell
@@ -56,23 +58,24 @@ const StatusChart = ({ data = [] }) => {
             labelFormatter={(label) => `${label}`}
             contentStyle={{
               backgroundColor: tooltipBg,
-              border: '1px solid rgba(148, 163, 184, 0.3)',
+              border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
               borderRadius: '12px',
               color: textColor,
               fontSize: '12px',
-              boxShadow: '0 8px 22px rgba(15, 23, 42, 0.12)'
+              boxShadow: '0 8px 22px rgba(15, 23, 42, 0.16)'
             }}
             itemStyle={{ color: textColor }}
             labelStyle={{ color: textColor, fontWeight: 700 }}
           />
           <Legend
             verticalAlign="bottom"
-            height={36}
+            height={44}
             iconType="circle"
             wrapperStyle={{
               color: labelColor,
-              fontSize: '12px',
-              fontWeight: 600
+              fontSize: '11px',
+              fontWeight: 600,
+              paddingTop: '8px'
             }}
           />
         </PieChart>

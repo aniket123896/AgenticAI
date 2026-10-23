@@ -9,7 +9,11 @@ export const AuthProvider = ({ children }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [token, setToken] = useState(() => localStorage.getItem('ccms_token') || null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    const savedToken = localStorage.getItem('ccms_token');
+    const savedUser = localStorage.getItem('ccms_user');
+    return !savedToken || !savedUser;
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,6 +48,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('ccms_user', JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    setLoading(false);
     return newUser;
   };
 
@@ -54,6 +59,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('ccms_user', JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    setLoading(false);
     return newUser;
   };
 

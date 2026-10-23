@@ -5,6 +5,8 @@ import {
   getComplaintById,
   updateComplaint,
   closeComplaint,
+  confirmResolution,
+  reopenComplaint,
   addComment,
   submitFeedback,
   getFeedback
@@ -18,13 +20,15 @@ const router = express.Router();
 // Protected for all authenticated users
 router.use(protect);
 
-router.post('/', authorize('student'), uploadAttachments, createComplaint);
-router.get('/my', authorize('student'), getMyComplaints);
+router.post('/', authorize('student', 'admin'), uploadAttachments, createComplaint);
+router.get('/my', authorize('student', 'admin'), getMyComplaints);
 router.get('/:id', getComplaintById);
 router.put('/:id', uploadAttachments, updateComplaint);
 router.post('/:id/close', closeComplaint);
+router.post('/:id/confirm-resolution', confirmResolution);
+router.post('/:id/reopen', reopenComplaint);
 router.post('/:id/comments', addComment);
-router.post('/:id/feedback', authorize('student'), submitFeedback);
+router.post('/:id/feedback', authorize('student', 'admin'), submitFeedback);
 router.get('/:id/feedback', getFeedback);
 
 export default router;

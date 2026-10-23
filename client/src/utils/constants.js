@@ -20,6 +20,7 @@ export const STATUSES = [
   'Under Review',
   'Assigned',
   'In Progress',
+  'Pending Confirmation',
   'Resolved',
   'Closed'
 ];
@@ -32,7 +33,7 @@ export const STATUS_CONFIG = {
     text: 'text-slate-700',
     border: 'border-slate-300',
     dot: 'bg-slate-400',
-    badge: 'bg-slate-100 text-slate-700 border-slate-200'
+    badge: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700'
   },
   'Under Review': {
     label: 'Under Review',
@@ -41,7 +42,7 @@ export const STATUS_CONFIG = {
     text: 'text-blue-700',
     border: 'border-blue-200',
     dot: 'bg-blue-500',
-    badge: 'bg-blue-50 text-blue-700 border-blue-200'
+    badge: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800/60'
   },
   Assigned: {
     label: 'Assigned',
@@ -50,7 +51,7 @@ export const STATUS_CONFIG = {
     text: 'text-purple-700',
     border: 'border-purple-200',
     dot: 'bg-purple-500',
-    badge: 'bg-purple-50 text-purple-700 border-purple-200'
+    badge: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800/60'
   },
   'In Progress': {
     label: 'In Progress',
@@ -59,7 +60,16 @@ export const STATUS_CONFIG = {
     text: 'text-amber-700',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
-    badge: 'bg-amber-50 text-amber-700 border-amber-200'
+    badge: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60'
+  },
+  'Pending Confirmation': {
+    label: 'Pending Confirmation',
+    color: 'violet',
+    bg: 'bg-violet-50',
+    text: 'text-violet-700',
+    border: 'border-violet-200',
+    dot: 'bg-violet-500',
+    badge: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/50 dark:text-violet-300 dark:border-violet-800/60'
   },
   Resolved: {
     label: 'Resolved',
@@ -68,7 +78,7 @@ export const STATUS_CONFIG = {
     text: 'text-emerald-700',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
   },
   Closed: {
     label: 'Closed',
@@ -77,7 +87,7 @@ export const STATUS_CONFIG = {
     text: 'text-zinc-600',
     border: 'border-zinc-200',
     dot: 'bg-zinc-400',
-    badge: 'bg-zinc-100 text-zinc-600 border-zinc-200'
+    badge: 'bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700'
   }
 };
 

@@ -24,6 +24,7 @@ export const COMPLAINT_STATUSES = [
   'Under Review',
   'Assigned',
   'In Progress',
+  'Pending Confirmation',
   'Resolved',
   'Closed'
 ];
@@ -102,6 +103,22 @@ const complaintSchema = new mongoose.Schema(
       resolvedAt: { type: Date, default: null }
     },
     resolvedAt: {
+      type: Date,
+      default: null
+    },
+    pendingConfirmationSince: {
+      type: Date,
+      default: null
+    },
+    confirmedResolvedAt: {
+      type: Date,
+      default: null
+    },
+    reopenRemarks: {
+      type: String,
+      default: ''
+    },
+    reopenedAt: {
       type: Date,
       default: null
     },

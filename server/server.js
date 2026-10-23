@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import User from './models/User.js';
+import Complaint from './models/Complaint.js';
 import { seedDatabase } from './seeds/seed.js';
 
 // Route imports
@@ -96,6 +97,28 @@ export const startServer = async () => {
     console.log('⚡ Initializing database with demo seeds...');
     await seedDatabase();
   }
+
+  // Periodic Two-Way Closure: Auto-close complaints left in Pending Confirmation for >= 3 days
+  setInterval(async () => {
+    try {
+      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+      const expired = await Complaint.find({
+        status: 'Pending Confirmation',
+        $or: [
+          { pendingConfirmationSince: { $lte: threeDaysAgo } },
+          { pendingConfirmationSince: null, resolvedAt: { $lte: threeDaysAgo } }
+        ]
+      });
+      for (const comp of expired) {
+        comp.status = 'Closed';
+        comp.closedAt = new Date();
+        await comp.save();
+        console.log(`⏱️ Auto-closed ticket ${comp.complaintId} after 3 days without student response.`);
+      }
+    } catch (e) {
+      // background error handled silently
+    }
+  }, 30 * 60 * 1000);
 
   const listenOnPort = (portToTry) =>
     new Promise((resolve, reject) => {

@@ -25,13 +25,13 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }) => {
       {/* Modal Box */}
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div
-          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full ${maxWidth} p-6 sm:my-8 border border-slate-100 animate-slide-up`}
+          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all w-full ${maxWidth} p-6 sm:my-8 border border-slate-100 animate-slide-up dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100`}
         >
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
-            <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4 dark:border-slate-800">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h3>
             <button
               onClick={onClose}
-              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <X className="w-5 h-5" />
             </button>

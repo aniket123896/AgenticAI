@@ -58,9 +58,9 @@ const Sidebar = ({ isOpen, onClose }) => {
 
       {/* Sidebar container */}
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 dark:bg-slate-900 dark:border-slate-700 ${
+        className={`fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 dark:bg-slate-900 dark:border-slate-800 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:static lg:z-auto lg:h-[calc(100vh-4rem)]`}
+        } lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:shrink-0 lg:self-start`}
       >
         {/* Header on mobile */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100 lg:hidden dark:border-slate-700">

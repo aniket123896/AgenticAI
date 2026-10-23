@@ -31,16 +31,16 @@ const ComplaintComments = ({ complaintId, comments = [], onCommentAdded }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-indigo-600" />
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 transition-colors">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-6 flex items-center gap-2">
+        <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
         Activity Updates & Comments ({comments.length})
       </h3>
 
       {/* Comment history feed */}
       <div className="space-y-4 mb-6">
         {comments.length === 0 ? (
-          <p className="text-xs text-slate-400 italic text-center py-4 bg-slate-50 rounded-xl">
+          <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
             No updates posted yet on this complaint.
           </p>
         ) : (
@@ -51,39 +51,39 @@ const ComplaintComments = ({ complaintId, comments = [], onCommentAdded }) => {
                 key={item._id}
                 className={`p-4 rounded-xl border transition ${
                   isAuthorAdmin
-                    ? 'bg-indigo-50/40 border-indigo-100'
-                    : 'bg-slate-50/70 border-slate-200/70'
+                    ? 'bg-indigo-50/40 border-indigo-100 dark:bg-indigo-950/30 dark:border-indigo-900/50'
+                    : 'bg-slate-50/70 border-slate-200/70 dark:bg-slate-800/50 dark:border-slate-700/60'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2">
                     <div
                       className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${
-                        isAuthorAdmin ? 'bg-indigo-600' : 'bg-slate-500'
+                        isAuthorAdmin ? 'bg-indigo-600' : 'bg-slate-500 dark:bg-slate-600'
                       }`}
                     >
                       {item.user?.name?.charAt(0) || 'U'}
                     </div>
-                    <span className="text-xs font-bold text-slate-800">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                       {item.user?.name || 'User'}
                     </span>
                     <span
                       className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                         isAuthorAdmin
-                          ? 'bg-indigo-100 text-indigo-700'
-                          : 'bg-slate-200 text-slate-700'
+                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-200'
+                          : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'
                       }`}
                     >
                       {isAuthorAdmin ? 'Admin Team' : 'Student'}
                     </span>
                   </div>
 
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">
                     {formatDate(item.createdAt)}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap pl-8">
+                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap pl-8">
                   {item.comment}
                 </p>
               </div>
@@ -94,7 +94,7 @@ const ComplaintComments = ({ complaintId, comments = [], onCommentAdded }) => {
 
       {/* Add comment form */}
       <form onSubmit={handleSubmit} className="space-y-3">
-        <label className="block text-xs font-bold text-slate-700">
+        <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
           {isAdmin ? 'Post Administrative Update / Notes' : 'Add a Remark'}
         </label>
         <textarea
@@ -106,7 +106,7 @@ const ComplaintComments = ({ complaintId, comments = [], onCommentAdded }) => {
               ? 'Write an update for the student and assignment logs...'
               : 'Write a question or note regarding this complaint...'
           }
-          className="w-full p-3 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition resize-none"
+          className="w-full p-3 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition resize-none"
         />
 
         <div className="flex justify-end">

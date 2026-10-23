@@ -8,13 +8,15 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
 const CategoryChart = ({ data = [] }) => {
-  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const axisColor = isDark ? '#e2e8f0' : '#334155';
-  const gridColor = isDark ? '#334155' : '#e2e8f0';
-  const tooltipBg = isDark ? '#020817' : '#1e293b';
-  const tooltipText = isDark ? '#e2e8f0' : '#ffffff';
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const axisColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? '#334155' : '#f1f5f9';
+  const tooltipBg = isDark ? '#0f172a' : '#1e293b';
+  const tooltipText = isDark ? '#f1f5f9' : '#ffffff';
 
   if (!data || data.length === 0) {
     return (

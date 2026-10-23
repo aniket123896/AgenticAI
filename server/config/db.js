@@ -36,25 +36,33 @@ export const connectDB = async () => {
   try {
     console.log(`🔌 Connecting to MongoDB at ${maskMongoUri(uri)}...`);
     const conn = await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 8000,
+      family: 4,
       retryWrites: true
     });
     inMemoryMode = false;
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     return conn;
   } catch (err) {
-    console.error(`❌ MongoDB connection failed: ${err.message}`);
-    console.error('🔐 Check your Atlas username/password, database user permissions, and allowlist IPs in MongoDB Atlas.');
-    console.error(`📌 Current MONGO_URI: ${maskMongoUri(uri)}`);
+    console.warn(`⚠️ First connection attempt failed (${err.message}). Retrying once...`);
+    try {
+      const conn = await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 10000,
+        family: 4,
+        retryWrites: true
+      });
+      inMemoryMode = false;
+      console.log(`✅ MongoDB Connected on retry: ${conn.connection.host}`);
+      return conn;
+    } catch (retryErr) {
+      console.error(`❌ MongoDB connection failed: ${retryErr.message}`);
+      console.error('🔐 Check your Atlas username/password, database user permissions, and allowlist IPs in MongoDB Atlas.');
+      console.error(`📌 Current MONGO_URI: ${maskMongoUri(uri)}`);
 
-    if (uri) {
-      console.error('⚠️ A MongoDB URL was configured, so the app will stop instead of silently switching to memory mode.');
-      throw new Error(`Database configuration is invalid: ${err.message}`);
+      console.warn('⚠️ MongoDB Atlas could not be reached. Switching automatically to High-Performance In-Memory DB Mode...');
+      inMemoryMode = true;
+      return { connection: { host: 'localhost (in-memory fallback)' } };
     }
-
-    console.log('⚡ Switching automatically to High-Performance In-Memory DB Mode...');
-    inMemoryMode = true;
-    return { connection: { host: 'localhost (in-memory fallback)' } };
   }
 };
 

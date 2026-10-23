@@ -21,19 +21,29 @@ const runTests = async () => {
 
   try {
     // 1. Register student
-    console.log('\n[Step 1] Registering a new Student (John Doe)...');
+    console.log('\n[Step 1] Requesting OTP and Registering a new Student (John Doe)...');
+    const studentEmail = `john.doe.${Date.now()}@college.com`;
+    const otpRes = await fetch(`${API_BASE}/auth/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: studentEmail, purpose: 'register' })
+    });
+    const otpData = await otpRes.json();
+    const otpCode = otpData.data?.devOtp || '123456';
+
     const regRes = await fetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: 'John Doe',
-        email: `john.doe.${Date.now()}@college.com`,
+        email: studentEmail,
         studentId: `STU${Date.now().toString().slice(-4)}`,
         password: 'Password@123',
         confirmPassword: 'Password@123',
         department: 'Computer Science & Engineering',
         year: '2nd Year',
-        phone: '+1 555-9876'
+        phone: '+1 555-9876',
+        otp: otpCode
       })
     });
     const regData = await regRes.json();

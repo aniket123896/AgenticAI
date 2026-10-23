@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import Otp from '../models/Otp.js';
+import { sendOtpEmail } from '../services/emailService.js';
 import { sendSuccess, sendError } from '../utils/responseHandler.js';
 
 const generateToken = (id, role) => {
@@ -8,12 +10,116 @@ const generateToken = (id, role) => {
   });
 };
 
+// @desc    Send OTP to student email for registration or login
+// @route   POST /api/auth/send-otp
+// @access  Public
+export const sendOtp = async (req, res, next) => {
+  try {
+    const { email, purpose = 'login' } = req.body;
+
+    if (!email) {
+      return sendError(res, 400, 'Please provide a valid Gmail/email address');
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    if (purpose === 'register') {
+      const existing = await User.findOne({ email: normalizedEmail }).select('_id');
+      if (existing) {
+        return sendError(res, 400, 'An account with this email already exists. Please log in.');
+      }
+    } else if (purpose === 'login') {
+      const existing = await User.findOne({ email: normalizedEmail }).select('_id role');
+      if (!existing) {
+        return sendError(res, 404, 'No account found with this email. Please register first.');
+      }
+    }
+
+    // Generate random 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Invalidate prior OTPs for this email & purpose
+    await Otp.deleteMany({ email: normalizedEmail, purpose });
+
+    await Otp.create({
+      email: normalizedEmail,
+      otp,
+      purpose,
+      expiresAt
+    });
+
+    // Send email notification to user's email address
+    const emailResult = await sendOtpEmail(normalizedEmail, otp, purpose);
+
+    if (!emailResult?.sent) {
+      if (emailResult?.error) {
+        return sendError(
+          res,
+          500,
+          `Failed to deliver email: ${emailResult.error}. Please check EMAIL_USER and EMAIL_PASS in server/.env`
+        );
+      }
+      // Dev / Demo fallback when EMAIL_USER is not configured in .env
+      return sendSuccess(
+        res,
+        200,
+        `Demo Mode OTP: ${otp} (Enter this code, or configure EMAIL_USER in server/.env for real emails)`,
+        {
+          email: normalizedEmail,
+          purpose,
+          devOtp: otp
+        }
+      );
+    }
+
+    return sendSuccess(res, 200, `Verification code successfully sent to ${normalizedEmail}`, {
+      email: normalizedEmail,
+      purpose
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify OTP code
+// @route   POST /api/auth/verify-otp
+// @access  Public
+export const verifyOtp = async (req, res, next) => {
+  try {
+    const { email, otp, purpose = 'login' } = req.body;
+
+    if (!email || !otp) {
+      return sendError(res, 400, 'Please provide both email and verification code');
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const validOtp = await Otp.findOne({
+      email: normalizedEmail,
+      otp: otp.trim(),
+      purpose,
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!validOtp) {
+      return sendError(res, 400, 'Invalid or expired verification code');
+    }
+
+    return sendSuccess(res, 200, 'Verification code verified successfully', {
+      email: normalizedEmail,
+      verified: true
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Register new student
 // @route   POST /api/auth/register
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword, studentId, phone, department, year } = req.body;
+    const { name, email, password, confirmPassword, studentId, phone, department, year, otp } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -28,24 +134,44 @@ export const register = async (req, res, next) => {
       return sendError(res, 400, 'Passwords do not match');
     }
 
-    // Check if user already exists with email
-    const existingEmail = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Verify OTP for registration
+    if (!otp) {
+      return sendError(res, 400, 'Email verification required. Please request and enter the 6-digit OTP sent to your email.');
+    }
+
+    const validOtp = await Otp.findOne({
+      email: normalizedEmail,
+      otp: otp.trim(),
+      purpose: 'register',
+      expiresAt: { $gt: new Date() }
+    });
+
+    if (!validOtp) {
+      return sendError(res, 400, 'Invalid or expired verification code. Please request a new OTP.');
+    }
+
+    await Otp.deleteMany({ email: normalizedEmail, purpose: 'register' });
+
+    // Parallelize unique checks to reduce database round-trip latency
+    const [existingEmail, existingStudentId] = await Promise.all([
+      User.findOne({ email: normalizedEmail }).select('_id'),
+      studentId ? User.findOne({ studentId }).select('_id') : Promise.resolve(null)
+    ]);
+
     if (existingEmail) {
       return sendError(res, 400, 'An account with this email already exists');
     }
 
-    // Check studentId uniqueness if provided
-    if (studentId) {
-      const existingStudentId = await User.findOne({ studentId });
-      if (existingStudentId) {
-        return sendError(res, 400, 'A student with this Student ID is already registered');
-      }
+    if (existingStudentId) {
+      return sendError(res, 400, 'A student with this Student ID is already registered');
     }
 
     // Create user
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password,
       studentId: studentId || `STU-${Date.now().toString().slice(-4)}`,
       phone: phone || '',
@@ -80,18 +206,68 @@ export const register = async (req, res, next) => {
   }
 };
 
-// @desc    Authenticate user & get token
+// @desc    Authenticate user & get token (supports OTP or Password)
 // @route   POST /api/auth/login
 // @access  Public
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, otp } = req.body;
 
-    if (!email || !password) {
-      return sendError(res, 400, 'Please provide both email and password');
+    if (!email) {
+      return sendError(res, 400, 'Please provide your email address');
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // 1. If OTP is provided, verify OTP authentication
+    if (otp) {
+      const validOtp = await Otp.findOne({
+        email: normalizedEmail,
+        otp: otp.trim(),
+        purpose: 'login',
+        expiresAt: { $gt: new Date() }
+      });
+
+      if (!validOtp) {
+        return sendError(res, 401, 'Invalid or expired verification code');
+      }
+
+      await Otp.deleteMany({ email: normalizedEmail, purpose: 'login' });
+
+      const user = await User.findOne({ email: normalizedEmail });
+      if (!user) {
+        return sendError(res, 404, 'User account not found');
+      }
+
+      const token = generateToken(user._id, user.role);
+
+      return sendSuccess(
+        res,
+        200,
+        'OTP Login successful',
+        {
+          token,
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            studentId: user.studentId,
+            phone: user.phone,
+            department: user.department,
+            year: user.year,
+            role: user.role,
+            profileImage: user.profileImage
+          }
+        }
+      );
+    }
+
+    // 2. Otherwise verify via standard password
+    if (!password) {
+      return sendError(res, 400, 'Please provide either password or verification OTP');
+    }
+
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
     if (!user) {
       return sendError(res, 401, 'Invalid email or password');
     }

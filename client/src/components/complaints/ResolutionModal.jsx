@@ -19,15 +19,15 @@ const ResolutionModal = ({ isOpen, onClose, onResolve, complaintId, isLoading = 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Resolve Complaint" maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="flex items-center gap-3 p-3.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <p>
             Resolving this complaint will notify the student and allow them to verify the fix, close the complaint, and leave feedback.
           </p>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
             Resolution Details & Actions Taken <span className="text-rose-500">*</span>
           </label>
           <textarea
@@ -38,19 +38,19 @@ const ResolutionModal = ({ isOpen, onClose, onResolve, complaintId, isLoading = 
               if (validationError) setValidationError('');
             }}
             placeholder="Describe what work was completed, parts replaced, or actions taken to resolve the student's issue..."
-            className="w-full p-3 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
+            className="w-full p-3 text-xs rounded-xl border border-slate-200 bg-white text-slate-900 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
           />
           {validationError && (
-            <p className="text-[11px] text-rose-600 font-medium mt-1">{validationError}</p>
+            <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1">{validationError}</p>
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
+            className="px-4 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 rounded-xl transition"
           >
             Cancel
           </button>

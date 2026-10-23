@@ -84,50 +84,56 @@ const AdminDashboard = () => {
       </div>
 
       {/* Analytics Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Status Distribution */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <PieIcon className="w-4 h-4 text-indigo-600" />
+              <PieIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">Status Distribution</h3>
             </div>
           </div>
-          <StatusChart data={charts?.byStatus} />
+          <div className="flex-1 flex items-center justify-center">
+            <StatusChart data={charts?.byStatus} />
+          </div>
         </div>
 
         {/* Complaints by Category */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-indigo-600" />
+              <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">Top Categories</h3>
             </div>
           </div>
-          <CategoryChart data={charts?.byCategory} />
+          <div className="flex-1 flex items-center justify-center">
+            <CategoryChart data={charts?.byCategory} />
+          </div>
         </div>
 
         {/* Monthly Submission Trend */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-700">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-600" />
+              <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-white">Submission Volume Trend</h3>
             </div>
           </div>
-          <TrendChart data={charts?.monthlyTrend} />
+          <div className="flex-1 flex items-center justify-center">
+            <TrendChart data={charts?.monthlyTrend} />
+          </div>
         </div>
       </div>
 
       {/* Bottom Section: Recent Complaints & Audit Stream */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Recent Lodged Complaints Table */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 dark:bg-slate-900 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900">Recent Campus Complaints</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Campus Complaints</h3>
             <Link
               to="/admin/complaints"
-              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 transition"
             >
               View All
               <ArrowRight className="w-3.5 h-3.5" />
@@ -135,9 +141,9 @@ const AdminDashboard = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-100 text-xs">
+            <table className="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
               <thead>
-                <tr className="text-left text-slate-400 font-bold uppercase text-[11px]">
+                <tr className="text-left text-slate-400 dark:text-slate-400 font-bold uppercase text-[11px]">
                   <th className="pb-3">Ticket ID</th>
                   <th className="pb-3">Student</th>
                   <th className="pb-3">Title & Dept</th>
@@ -146,58 +152,70 @@ const AdminDashboard = () => {
                   <th className="pb-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-600">
-                {recentComplaints.map((c) => (
-                  <tr key={c._id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3 font-mono font-bold text-indigo-600">{c.complaintId}</td>
-                    <td className="py-3 font-medium text-slate-800">{c.submittedBy?.name || 'Student'}</td>
-                    <td className="py-3">
-                      <div className="font-semibold text-slate-900 line-clamp-1 max-w-xs">{c.title}</div>
-                      <div className="text-[10px] text-slate-400">{c.category} • {c.assignedDepartment?.name || 'Unassigned'}</div>
-                    </td>
-                    <td className="py-3">
-                      <PriorityBadge priority={c.priority} size="sm" />
-                    </td>
-                    <td className="py-3">
-                      <StatusBadge status={c.status} size="sm" />
-                    </td>
-                    <td className="py-3 text-right">
-                      <Link
-                        to={`/admin/complaints/${c._id}`}
-                        className="px-2.5 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-600 hover:text-white transition"
-                      >
-                        Manage
-                      </Link>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-600 dark:text-slate-300">
+                {recentComplaints.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="py-8 text-center text-slate-400 dark:text-slate-500">
+                      No complaints registered yet
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  recentComplaints.map((c) => (
+                    <tr key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition">
+                      <td className="py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.complaintId}</td>
+                      <td className="py-3 font-medium text-slate-800 dark:text-slate-200">{c.submittedBy?.name || 'Student'}</td>
+                      <td className="py-3">
+                        <div className="font-semibold text-slate-900 dark:text-white line-clamp-1 max-w-xs">{c.title}</div>
+                        <div className="text-[10px] text-slate-400 dark:text-slate-400">{c.category} • {c.assignedDepartment?.name || 'Unassigned'}</div>
+                      </td>
+                      <td className="py-3">
+                        <PriorityBadge priority={c.priority} size="sm" />
+                      </td>
+                      <td className="py-3">
+                        <StatusBadge status={c.status} size="sm" />
+                      </td>
+                      <td className="py-3 text-right">
+                        <Link
+                          to={`/admin/complaints/${c._id}`}
+                          className="px-2.5 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-600 dark:hover:text-white rounded-lg hover:bg-indigo-600 hover:text-white transition"
+                        >
+                          Manage
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Live History Audit Stream */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 dark:bg-slate-900 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-base font-bold text-slate-900">Live Audit Activity</h3>
+            <History className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Live Audit Activity</h3>
           </div>
 
           <div className="space-y-3.5">
-            {recentActivities.map((act) => (
-              <div key={act._id} className="text-xs border-l-2 border-indigo-200 pl-3 py-0.5 space-y-0.5">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-800">{act.action}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {act.complaint?.complaintId}
-                  </span>
+            {recentActivities.length === 0 ? (
+              <p className="text-xs text-slate-400 dark:text-slate-500 py-4 text-center">No recent activities logged</p>
+            ) : (
+              recentActivities.map((act) => (
+                <div key={act._id} className="text-xs border-l-2 border-indigo-300 dark:border-indigo-700 pl-3 py-0.5 space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{act.action}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 font-mono">
+                      {act.complaint?.complaintId}
+                    </span>
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px]">
+                    {act.notes || `By ${act.performedBy?.name || 'Admin'}`}
+                  </p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">{formatDate(act.createdAt)}</p>
                 </div>
-                <p className="text-slate-500 text-[11px]">
-                  {act.notes || `By ${act.performedBy?.name || 'Admin'}`}
-                </p>
-                <p className="text-[10px] text-slate-400">{formatDate(act.createdAt)}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

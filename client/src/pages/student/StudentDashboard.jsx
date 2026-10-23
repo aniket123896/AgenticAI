@@ -119,13 +119,13 @@ const StudentDashboard = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Recent Complaints</h2>
-            <p className="text-xs text-slate-500">Latest updates on your reported campus issues</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Complaints</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Latest updates on your reported campus issues</p>
           </div>
 
           <Link
             to="/student/complaints"
-            className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition"
+            className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition"
           >
             View All ({stats?.total || 0})
             <ArrowRight className="w-3.5 h-3.5" />

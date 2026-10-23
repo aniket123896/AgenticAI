@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { GraduationCap, ArrowRight, Lock, Mail, User, Phone, Sparkles } from 'lucide-react';
+import { authService } from '../services/authService';
+import { GraduationCap, ArrowRight, Lock, Mail, User, Phone, Sparkles, KeyRound, CheckCircle2 } from 'lucide-react';
 
 const RegisterPage = () => {
   const initialForm = {
@@ -17,6 +18,10 @@ const RegisterPage = () => {
   };
 
   const [formData, setFormData] = useState(initialForm);
+  const [otp, setOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpTimer, setOtpTimer] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const { register, isAuthenticated, user } = useAuth();
@@ -26,7 +31,20 @@ const RegisterPage = () => {
   // Ensure all fields are clean and blank on fresh load / refresh
   useEffect(() => {
     setFormData(initialForm);
+    setOtp('');
+    setOtpSent(false);
   }, []);
+
+  // OTP resend countdown
+  useEffect(() => {
+    let interval = null;
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -38,6 +56,31 @@ const RegisterPage = () => {
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (e.target.name === 'email') {
+      setOtpSent(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      error('Please enter a valid Gmail / college email first');
+      return;
+    }
+
+    setSendingOtp(true);
+    try {
+      const res = await authService.sendOtp(formData.email.trim(), 'register');
+      setOtpSent(true);
+      setOtpTimer(60);
+      if (res.data?.devOtp) {
+        setOtp(res.data.devOtp);
+      }
+      success(res.message || '6-digit OTP code sent to your email!');
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to send OTP. Please check your email.');
+    } finally {
+      setSendingOtp(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -45,6 +88,11 @@ const RegisterPage = () => {
 
     if (!formData.name || !formData.email || !formData.password) {
       error('Please complete all required fields');
+      return;
+    }
+
+    if (!otpSent || !otp || otp.length < 4) {
+      error('Please enter the 6-digit OTP code sent to your email to verify your account');
       return;
     }
 
@@ -63,12 +111,13 @@ const RegisterPage = () => {
       await register({
         ...formData,
         email: formData.email.trim(),
-        studentId: formData.studentId.trim().toUpperCase()
+        studentId: formData.studentId.trim().toUpperCase(),
+        otp: otp.trim()
       });
-      success('Student account created successfully! Welcome to CCMS.');
-      window.location.href = '/student/dashboard';
+      success('Student account verified & created! Welcome to CCMS.');
+      navigate('/student/dashboard', { replace: true });
     } catch (err) {
-      error(err.response?.data?.message || 'Registration failed. Please check your details.');
+      error(err.response?.data?.message || 'Registration failed. Please check your details or OTP.');
       setLoading(false);
     }
   };
@@ -148,24 +197,70 @@ const RegisterPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Email */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
-                College Email <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="off"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="alex@college.com"
-                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-600 transition dark:bg-slate-900/80 dark:border-slate-700 dark:text-white"
-                />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200">
+                  Gmail / College Email <span className="text-rose-500">*</span>
+                </label>
+                {otpSent && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> OTP Sent
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="off"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="alex@gmail.com"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-600 transition dark:bg-slate-900/80 dark:border-slate-700 dark:text-white"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp || !formData.email || otpTimer > 0}
+                  className="px-3.5 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition shrink-0 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/80 disabled:opacity-50"
+                >
+                  {sendingOtp ? (
+                    <span className="w-3.5 h-3.5 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin inline-block" />
+                  ) : otpTimer > 0 ? (
+                    `${otpTimer}s`
+                  ) : otpSent ? (
+                    'Resend'
+                  ) : (
+                    'Get OTP'
+                  )}
+                </button>
               </div>
             </div>
 
+            {/* Email OTP Code */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
+                Email 6-Digit OTP <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder={otpSent ? 'Enter 6-digit code' : 'Click Get OTP first'}
+                  disabled={!otpSent}
+                  className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 bg-white/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-600 transition font-mono tracking-wider dark:bg-slate-900/80 dark:border-slate-700 dark:text-white disabled:opacity-60"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Phone */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
@@ -184,9 +279,7 @@ const RegisterPage = () => {
                 />
               </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Department */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
@@ -207,9 +300,11 @@ const RegisterPage = () => {
                 <option value="Other">Other</option>
               </select>
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Academic Year */}
-            <div>
+            <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-700 mb-1.5 dark:text-slate-200">
                 Academic Year <span className="text-rose-500">*</span>
               </label>
